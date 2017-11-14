@@ -240,7 +240,7 @@ based on the Enos environment.
         'network_interface':          env['eths'][NETWORK_IFACE],
         'kolla_internal_vip_address': env['config']['vip'],
         'neutron_external_interface': env['eths'][EXTERNAL_IFACE],
-        'neutron_external_address':   env['config']['external_vip'],
+        # TODO: +'neutron_external_address':   env['config']['external_vip'],+
         'influx_vip':                 env['config']['influx_vip'],
         'kolla_ref':                  env['config']['kolla_ref'],
         'resultdir':                  env['resultdir']

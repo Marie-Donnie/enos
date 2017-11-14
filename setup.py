@@ -29,19 +29,14 @@ setup(
     long_description=read('README.rst'),
     packages=find_packages(),
     install_requires=[
+        # 'enoslib'
         'Jinja2==2.9',
-        'execo==2.6.1',
-        'ansible>=2.3.0,<2.4.0',
         'influxdb==4.0.0',
         'docopt>=0.6.2,<0.7.0',
-        'httplib2==0.9.2',
-        'python-dateutil==2.2',
-        'python-openstackclient>=3.0.0,<=4.0.0',
-        'python-neutronclient==6.3.0',
-        'python-vagrant>=0.5.14,<0.6.0',
+        'python-openstackclient>=3.12.0,<4.0.0',
         # 'python-blazarclient==0.2.0',
         # ReadTheDocs
-        'GitPython>=2.1.5'
+        'GitPython>=2.1.5,<3.0'
     ],
     entry_points={'console_scripts': ['enos = enos.enos:main']},
     include_package_data=True
