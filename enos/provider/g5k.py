@@ -20,7 +20,6 @@ DEFAULT_CONN_PARAMS = {'user': 'root'}
 
 pf = pprint.PrettyPrinter(indent=4).pformat
 
-
 class G5k(Provider):
     def init(self, conf, force_deploy=False):
         raise Exception("TODO: Not implemented yet")

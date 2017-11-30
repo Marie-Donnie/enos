@@ -19,6 +19,8 @@ network_constraints:
   default_delay: 10ms
   default_rate: 100mbit
   default_loss: 0
+  groups: ["grp1", "grp2"]
+
 
 # ############################################### #
 # Inventory to use                                #

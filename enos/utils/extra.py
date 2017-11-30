@@ -40,7 +40,14 @@ def generate_inventory(roles, networks, base_inventory, dest):
     concatenate them with the base_inventory file.
     The generated inventory is written in dest
     """
-    api.generate_inventory(roles, networks, dest, check_networks=True)
+    # NOTE(msimonin): if len(networks) is <= 1
+    # provision a fake one that will map the external network
+    api.generate_inventory(
+        roles,
+        networks,
+        dest,
+        check_networks=True
+    )
 
     with open(dest, 'a') as f:
         f.write("\n")
@@ -223,20 +230,16 @@ def get_total_wanted_machines(resources):
 
 
 def gen_enoslib_roles(resources_or_topology):
+    """Generator for the resources or topology."""
     for k1, v1 in resources_or_topology.items():
         for k2, v2 in v1.items():
             if isinstance(v2, dict):
                 for k3, v3 in v2.items():
-                    yield {"roles": [k1, k3], "flavor": k2, "number": v3}
+                    yield {"group": k1, "role": k3, "flavor": k2, "number": v3}
             else:
-                yield {"roles": [k2], "flavor": k1, "number": v2}
+                # Puts the resources in a default topology group
+                yield {"group": "default_group", "role": k2, "flavor": k1, "number": v2}
 
-
-#def gen_resources(resources):
-#    """Generator for the resources in the config file."""
-#    for l1, roles in resources.items():
-#        for l2, l3 in roles.items():
-#            yield l1, l2, l3
 
 
 def load_config(config, provider_topo2rsc, default_provider_config):

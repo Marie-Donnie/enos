@@ -36,14 +36,18 @@ command.
 
 from docopt import docopt
 from enoslib.task import enostask as task
-from enoslib.api import run_ansible
+from enoslib.api import run_ansible, emulate_network, validate_network
+import json
 import logging
+import operator
 import os
+import pickle
 import pprint
 from subprocess import check_call
-from utils.extra import (make_provider, load_config, generate_inventory,
+from utils.errors import EnosFilePathError
+from utils.extra import (make_provider, generate_inventory,
 seekpath, get_vip_pool, pop_ip, bootstrap_kolla, lookup_network)
-from utils.constants import (SYMLINK_NAME, ANSIBLE_DIR, VERSION)
+from utils.constants import (ANSIBLE_DIR, INVENTORY_DIR, VERSION, TEMPLATE_DIR)
 import yaml
 
 def deploy(**kwargs):
@@ -340,6 +344,52 @@ Options:
     logging.info(cmd)
     check_call(cmd, shell=True)
 
+
+@task()
+def new(env=None, **kwargs):
+    """
+usage: enos new [-e ENV|--env=ENV] [-s|--silent|-vv]
+
+Print reservation example, to be manually edited and customized:
+
+  enos new > reservation.yaml
+
+Options:
+  -h --help            Show this help message.
+  -s --silent          Quiet mode.
+  -vv                  Verbose mode.
+    """
+    logging.debug('phase[new]: args=%s' % kwargs)
+    with open(os.path.join(TEMPLATE_DIR, 'reservation.yaml.sample'),
+              mode='r') as content:
+        print content.read()
+
+@task()
+def tc(env=None, **kwargs):
+    """
+usage: enos tc [-e ENV|--env=ENV] [--test] [-s|--silent|-vv]
+
+Enforce network constraints
+
+Options:
+  -e ENV --env=ENV     Path to the environment directory. You should
+                       use this option when you want to link a specific
+                       experiment.
+  -h --help            Show this help message.
+  -s --silent          Quiet mode.
+  --test               Test the rules by generating various reports.
+  -vv                  Verbose mode.
+    """
+    roles = env["rsc"]
+    inventory = env["inventory"]
+    test = kwargs['--test']
+    if test:
+        validate_network(roles, inventory)
+    else:
+        network_constraints = env["config"]["network_constraints"]
+        emulate_network(roles, inventory, network_constraints)
+
+
 @task(new=True)
 def up(env=None, **kwargs):
     """
@@ -452,8 +502,8 @@ def main():
     pushtask(enostasks, info)
     pushtask(enostasks, init)
     pushtask(enostasks, install)
-    # pushtask(enostasks, new)
-    # pushtask(enostasks, tc)
+    pushtask(enostasks, new)
+    pushtask(enostasks, tc)
     pushtask(enostasks, up)
 
     task = enostasks[args['<command>']]
