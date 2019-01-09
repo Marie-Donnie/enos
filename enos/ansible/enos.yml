@@ -32,8 +32,8 @@
         tags: ['grafana'],
         when: enable_monitoring | bool }
 
-- name: "{{ bench.type }} tasks"
-  hosts: disco/bench
-  roles:
-    - { role: "{{ bench.type }}",
-        tags: ['bench'] }
+# - name: "{{ bench.type }} tasks"
+#   hosts: disco/bench
+#   roles:
+#     - { role: "{{ bench.type }}",
+#         tags: ['bench'] }
