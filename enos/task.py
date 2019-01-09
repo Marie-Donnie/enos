@@ -92,15 +92,20 @@ def up(config, config_file=None, env=None, **kwargs):
     logging.debug("Provider network information: %s", env['networks'])
 
     # Generates inventory for ansible/kolla
-    inventory = os.path.join(env['resultdir'], 'multinode')
+
     inventory_conf = env['config'].get('inventory')
     if not inventory_conf:
         logging.debug("No inventory specified, using the sample.")
         base_inventory = os.path.join(INVENTORY_DIR, 'inventory.sample')
     else:
         base_inventory = seekpath(inventory_conf)
-    generate_inventory(env['rsc'], env['networks'], base_inventory, inventory)
-    logging.info('Generates inventory %s' % inventory)
+    if "--limit" not in kwargs:
+        inventory = os.path.join(env['resultdir'], 'multinode')
+        generate_inventory(env['rsc'], env['networks'], base_inventory, inventory)
+        logging.info('Generates inventory %s' % inventory)
+    else:
+        inventory = os.path.join(INVENTORY_DIR, 'multinode')
+        logging.info('Using %s as inventory' % inventory)
 
     env['inventory'] = inventory
 
@@ -208,6 +213,7 @@ def bench(env=None, **kwargs):
     logging.debug('phase[bench]: args=%s' % kwargs)
     playbook_values = mk_enos_values(env)
     workload_dir = seekpath(kwargs["--workload"])
+    logging.error(workload_dir)
     with open(os.path.join(workload_dir, "run.yml")) as workload_f:
         workload = yaml.load(workload_f)
         for bench_type, desc in workload.items():
@@ -249,7 +255,6 @@ def bench(env=None, **kwargs):
                         bench['plugin_location'] = plugin
                     playbook_values.update(bench=bench)
                     playbook_values.update(enos_action="bench")
-
                     run_ansible([playbook_path],
                                 inventory_path,
                                 extra_vars=playbook_values)
@@ -398,9 +403,14 @@ def _kolla(env=None, **kwargs):
     kolla_path = get_and_bootstrap_kolla(env, force=False)
     kolla_cmd = [os.path.join(kolla_path, "tools", "kolla-ansible")]
     kolla_cmd.extend(kwargs['<command>'])
-    kolla_cmd.extend(["-i", "%s/multinode" % env['resultdir'],
-                      "--passwords", "%s/passwords.yml" % env['resultdir'],
-                      "--configdir", "%s" % env['resultdir']])
+    if "--limit" not in kwargs['<command>']:
+        kolla_cmd.extend(["-i", "%s/multinode" % env['resultdir'],
+                          "--passwords", "%s/passwords.yml" % env['resultdir'],
+                          "--configdir", "%s" % env['resultdir']])
+    else:
+        kolla_cmd.extend(["-i", "%s/multinode" % INVENTORY_DIR,
+                          "--passwords", "%s/passwords.yml" % env['resultdir'],
+                          "--configdir", "%s" % env['resultdir']])
     logging.info(kolla_cmd)
     in_kolla(kolla_cmd)
 

@@ -64,7 +64,7 @@ def load_config(config_file):
 def up(**kwargs):
     """
     usage: enos up  [-e ENV|--env=ENV][-f CONFIG_FILE] [--force-deploy]
-                    [-t TAGS|--tags=TAGS] [-s|--silent|-vv]
+                    [-t TAGS|--tags=TAGS] [-s|--silent|-vv] [--limit]
 
     Get resources and install the docker registry.
 
